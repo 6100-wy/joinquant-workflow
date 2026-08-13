@@ -29,6 +29,8 @@ joinquant-workflow/
 2. 按 `SKILL.md` 中的占位符（`<PROFILE_DIR>`、`<STRATEGY_ROOT>`、`<VAULT>` 等）替换为本机路径。
 3. 依赖：Node.js（npx）、Playwright CLI（`npx --yes --package @playwright/cli playwright-cli`）、Git Bash/PowerShell。
 
+详细配置（路径替换、加密凭据、浏览器会话、与仓库同步）见 [docs/local-setup.md](docs/local-setup.md)。
+
 ## 使用
 
 对 Codex 说：
