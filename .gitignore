@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.pyc
+
+# 凭据与会话（严禁提交）
+.joinquant-credentials.json
+jq_auth.json
+*_profile/
+.playwright-cli/
+
+# 本地工作产物
+work/
+*.log

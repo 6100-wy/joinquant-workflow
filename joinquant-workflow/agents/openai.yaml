@@ -1,0 +1,4 @@
+interface:
+  display_name: "聚宽量化日常工作流"
+  short_description: "聚宽模拟盘每日收盘监控与盈亏对账，以及论坛策略发掘、克隆与回测工作流"
+  default_prompt: "帮我跑今天的聚宽收盘例行工作"

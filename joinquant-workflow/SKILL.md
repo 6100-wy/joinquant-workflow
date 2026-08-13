@@ -1,0 +1,70 @@
+---
+name: joinquant-workflow
+description: JoinQuant（聚宽）量化日常：自动打开并登录聚宽平台、查看三个模拟实盘（重点关注_2ETF/3ETF、双龙出海）的收益与持仓、导出 CSV 对账、核对日志、更新 Obsidian 资料库与工作日志；以及在聚宽社区发掘策略、克隆、按实盘成本改代码、跑回测并诚实评估。Use when the user asks to 跑今天的聚宽收盘例行工作、看模拟盘数据、对账、写收盘复盘、在聚宽论坛找策略、克隆策略、改策略成本/回测、或类似聚宽量化日常任务。
+---
+
+# 聚宽量化日常工作流（JoinQuant Workflow）
+
+## 概览
+
+本技能把“聚宽量化日常”固化为可重复流程：**收盘例行工作**（登录 → 读模拟盘 → 导出 → 对账 → 更新记录）与**策略发掘/回测**（逛社区 → 克隆 → 改实盘成本 → 回测 → 诚实评估）。所有动作遵循「只记录、不干预」原则，改动策略参数必须留待周五复盘并形成书面结论。
+
+## 关键路径与前置
+
+- 浏览器自动化：`npx --yes --package @playwright/cli playwright-cli ...`（持久化配置档 + 登录态）
+- 持久化浏览器配置：`<PROFILE_DIR>`（如 `$env:USERPROFILE\.joinquant-profile`）
+- 登录态备份：`<WORK>\jq_auth.json`（`state-save` 生成，`state-load` 恢复）
+- 策略文件根目录：`<STRATEGY_ROOT>`（如 `D:\...\New project 2`）
+- 资料库：`<VAULT>\07-股票投资\`
+- 导出目录：`<EXPORT_ROOT>\YYYY-MM-DD\`
+- 工作日志：`<LOG_ROOT>\复盘记录_YYYY-MM-DD.md`
+- 对账脚本：本技能 `scripts/jq_daily_analyze.py`
+
+> 上述 `<...>` 为占位符，请按本机实际路径替换；本仓库不包含任何账号凭据或本地路径。
+
+## 流程决策
+
+- 用户要求“收盘例行 / 看模拟盘 / 对账 / 收盘复盘”→ 走**收盘例行工作**。
+- 用户要求“找策略 / 克隆策略 / 回测 / 改代码”→ 走**策略发掘与回测**。
+- 两者可组合（例如收盘后顺带发掘新策略补模拟位）。
+
+## 一、登录与会话
+
+1. 若浏览器会话在（`playwright-cli tab-list` 有标签且页面为模拟交易页）→ 直接使用。
+2. 若会话断开：以持久化配置档重启
+   `playwright-cli open "https://www.joinquant.com/algorithm/trade/list" --headed --persistent --profile <pw_jq_profile> --browser chrome`。
+3. 若需要登录（页面跳转到登录页）：运行 `scripts/jq_get_credentials.ps1` 读取凭据（手机号明文 + DPAPI 解密后的密码，凭据文件 `$env:USERPROFILE\.joinquant-credentials.json` 只含加密串，不存明文）；切到“密码登录”，填手机号、密码，勾选“阅读并接受用户协议”，点登录。**禁止把明文凭据写进技能或代码**。
+4. 出现滑块/验证码时：让用户在可见浏览器窗口内完成，等待其回复“好了”。
+5. 登录成功后 `playwright-cli state-save <work>/jq_auth.json`，供后续会话恢复。
+
+详细命令与元素定位见 [references/runbook.md](references/runbook.md)。
+
+## 二、收盘例行工作（每日 16:30 清算后执行）
+
+1. **读列表页**：`eval` 抓取表格文本，得到三策略 累计收益/年化收益/今日收益/最大回撤。列顺序为 `累计收益 | 年化收益 | 今日收益 | 最大回撤`（大年化数是年化外推，不是回测收益）。
+2. **逐策略导出**：点进详情页 → 导出全部（持仓 + 下单各一个链接）→ 把 `.playwright-cli` 下下载的 CSV 复制到当日导出目录并改名 `{策略}_positions.csv` / `{策略}_transactions.csv`（**同名覆盖，必须逐个立即复制**）。
+3. **日志核对**：详情页“日志”标签 → 取日志文本，检查 ERROR/Traceback、滑点（成交价 vs 预估含成本价 ≤ 千一）、信号与持仓一致性、走弱期/Regime 判定。
+4. **对账**：`python scripts/jq_daily_analyze.py <导出目录> <3ETF累计> <2ETF累计> <双龙累计>`，差异应在 ±10 元内。
+5. **更新记录**：
+   - 资料库三张策略笔记“模拟状态”表（累计/年化/今日/回撤 + 日期）
+   - 新建 `<VAULT>\07-股票投资\复盘\YYYY-MM-DD_收盘观察.md`（模板见 runbook）
+   - 更新 `<VAULT>\07-股票投资\股票投资首页.md` 当前状态段
+   - 填写 `<LOG_ROOT>\复盘记录_YYYY-MM-DD.md` 工作日志
+6. **规则**：只记录不干预——不改参数、不删代码、不暂停/关闭策略；异常写入日志待周五复盘裁决。
+
+## 三、策略发掘与回测
+
+1. **逛社区**：打开 `https://www.joinquant.com/view/community/list?listType=1`，重点看“精华”“策略天梯”等汇总帖（如《聚宽所有策略天梯3.0过滤版》），用 `eval` 提取表格与链接。
+2. **评估候选**：按 [references/strategy-evaluation.md](references/strategy-evaluation.md) 的清单核查——回测口径、回撤、近一年表现、成交真实性、社区评论、未来函数嫌疑。**年化数字大不等于好**。
+3. **克隆**：在文章内嵌策略 iframe 点“克隆策略”（需积分，先确认用户账号有积分）→ 从策略列表打开克隆 → 读代码。
+4. **改实盘成本**：佣金万 3 双向（min 5 元）、印花税卖出 0.5‰、滑点 ETF 千一 / 个股千三（打板妖股类）；修复明显的 bug（如除零）；保持 `avoid_future_data`、`use_real_price`、Python3。保存到 `<STRATEGY_ROOT>\` 并 `py_compile` 验证。
+5. **回测**：编辑器设置 `2020-01-01 ~ 前一个交易日`、10 万、分钟级、Python3，运行详细回测；完成后读取 收益/年化/回撤/夏普/胜率/盈亏比/日志错误。
+6. **诚实汇报**：给出真实指标 + 风险提示（回撤与 20% 心理线对比、近一年表现、成交假设、盈亏比），明确“回测≠实战”；把结果写入工作日志与资料库。
+
+## 四、通用注意事项
+
+- 编辑器是 Ace：注入代码用 `editor.setValue(code, -1)`（`document.querySelector('.ace_editor').env.editor`），改完页面会显示“已保存”。
+- 本地临时文件服务（CORS）可在页面内 `fetch` 读取本地策略文件再注入编辑器（见 runbook）。
+- 回测结束时间不能晚于前一个交易日；结束日期用 `前一日`。
+- 用词克制：不承诺收益、不用“稳赚”类表述；无法核实的数字标注口径。
+- 浏览器窗口：用户在时用 `--headed`；无人值守用无头模式即可。
