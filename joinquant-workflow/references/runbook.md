@@ -43,6 +43,8 @@ npx --yes --package @playwright/cli playwright-cli goto "https://www.joinquant.c
 npx --yes --package @playwright/cli playwright-cli find "<文章标题>"
 npx --yes --package @playwright/cli playwright-cli click <文章ref>
 Start-Sleep -Seconds 3   # 停留计数
+#    ⚠ 浏览同样会弹“拉动图标/拼图验证”（与签到同类，AI 无法自动通过）：
+#    出现验证码时停止自动操作，让用户在可见窗口手动完成，否则积分不累计（08-15 实测无积分变化）。
 # 循环打开若干篇后回到积分中心确认“可用积分”与状态
 ```
 
