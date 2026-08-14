@@ -29,7 +29,13 @@ def analyze(folder):
         positions = read_csv(pos_p)
         txns = read_csv(txn_p)
         last_date = max(r["日期"] for r in positions)
-        cur = [r for r in positions if r["日期"] == last_date]
+        # 同日可能出现重复行（导出日期选择器默认到未来交易日时），按标的去重
+        seen = set()
+        cur = []
+        for r in positions:
+            if r["日期"] == last_date and r["标的"] not in seen:
+                seen.add(r["标的"])
+                cur.append(r)
         unreal = 0.0
         for r in cur:
             v = r["盈亏/逐笔浮盈"].split("(")[0].replace("%", "").strip()
