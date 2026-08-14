@@ -36,6 +36,8 @@ npx --yes --package @playwright/cli playwright-cli open "https://www.joinquant.c
 npx --yes --package @playwright/cli playwright-cli snapshot   # 找“签到”按钮
 # 2) 签到：按钮文本为“签到”时点击；为“已签到”时跳过
 npx --yes --package @playwright/cli playwright-cli click <签到ref>
+#    若弹出滑块/对图案验证码：停止自动操作，让用户在可见窗口手动完成（AI 无法可靠过验证码），
+#    等待用户回复“好了”后继续；不要反复重试。
 # 3) 浏览社区文章（自动累计 1 分/篇，上限 30 分/月）：
 #    按钮“已完成”= 本月已达标，跳过；否则去社区列表逐篇打开文章
 npx --yes --package @playwright/cli playwright-cli goto "https://www.joinquant.com/view/community/list?listType=1"
