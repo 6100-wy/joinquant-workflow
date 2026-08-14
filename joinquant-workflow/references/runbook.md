@@ -1,7 +1,5 @@
 # 聚宽 Runbook（详细命令）
 
-> 路径占位符：`<PROFILE_DIR>` / `<WORK>` / `<STRATEGY_ROOT>` / `<VAULT>` / `<EXPORT_ROOT>` / `<LOG_ROOT>`，按本机实际路径替换。
-
 ## 目录
 
 1. 浏览器与会话
@@ -17,18 +15,37 @@
 npx --yes --package @playwright/cli playwright-cli tab-list
 
 # 重启（有登录态时无头即可）
-npx --yes --package @playwright/cli playwright-cli open "https://www.joinquant.com/algorithm/trade/list" --persistent --profile "<PROFILE_DIR>" --browser chrome
+npx --yes --package @playwright/cli playwright-cli open "https://www.joinquant.com/algorithm/trade/list" --persistent --profile "C:\Users\Administrator\Documents\Codex\2026-08-13\https-www-toutiao-com-video-7673021328735076398\work\pw_jq_profile" --browser chrome
 
 # 需要用户登录时加 --headed，登录后保存状态
-npx --yes --package @playwright/cli playwright-cli state-save "<WORK>\jq_auth.json"
+npx --yes --package @playwright/cli playwright-cli state-save "C:\Users\Administrator\Documents\Codex\2026-08-13\https-www-toutiao-com-video-7673021328735076398\work\jq_auth.json"
 ```
 
-凭据文件 `$env:USERPROFILE\.joinquant-credentials.json`（密码经 Windows DPAPI 加密，磁盘无明文）：
+凭据文件 `C:\Users\Administrator\.joinquant-credentials.json`（密码经 Windows DPAPI 加密，磁盘无明文）：
 ```json
 {"phone": "13800000000", "password_enc": "<DPAPI 加密串>"}
 ```
 读取解密：`powershell -File <skill>/scripts/jq_get_credentials.ps1`（输出 `phone=...` 与 `password=...` 两行）。密码只在本机当前用户下可解。
 登录步骤：`find "密码登录"` 点击 → `fill` 手机号/密码输入框 → 勾选协议复选框 → `click` “登 录”。出现验证码则请用户在可见窗口完成。
+
+### 每日积分领取（签到 + 浏览文章）
+
+```powershell
+# 1) 打开积分中心
+npx --yes --package @playwright/cli playwright-cli open "https://www.joinquant.com/view/user/floor?type=creditsdesc"
+npx --yes --package @playwright/cli playwright-cli snapshot   # 找“签到”按钮
+# 2) 签到：按钮文本为“签到”时点击；为“已签到”时跳过
+npx --yes --package @playwright/cli playwright-cli click <签到ref>
+# 3) 浏览社区文章（自动累计 1 分/篇，上限 30 分/月）：
+#    按钮“已完成”= 本月已达标，跳过；否则去社区列表逐篇打开文章
+npx --yes --package @playwright/cli playwright-cli goto "https://www.joinquant.com/view/community/list?listType=1"
+npx --yes --package @playwright/cli playwright-cli find "<文章标题>"
+npx --yes --package @playwright/cli playwright-cli click <文章ref>
+Start-Sleep -Seconds 3   # 停留计数
+# 循环打开若干篇后回到积分中心确认“可用积分”与状态
+```
+
+说明：浏览积分按文章打开自动累计，无需手动领取；每月上限 30 分，达标后按钮显示“已完成”。
 注意：`fill` 命令会把密码明文出现在命令日志中，属本机自动登录的固有行为；凭据文件本身保持加密。
 
 ## 2. 收盘例行工作分步命令
@@ -50,10 +67,10 @@ npx --yes --package @playwright/cli playwright-cli snapshot   # 记下持仓/下
 # 3) 逐个点击导出并立即复制（同名覆盖！）
 npx --yes --package @playwright/cli playwright-cli click <posRef>
 Start-Sleep -Seconds 4
-Copy-Item ".playwright-cli\live-position-list.csv" "<EXPORT_ROOT>\<YYYY-MM-DD>\3ETF_positions.csv" -Force
+Copy-Item ".playwright-cli\live-position-list.csv" "D:\Users\Administrator\Documents\New project 2\jq_exports\<YYYY-MM-DD>\3ETF_positions.csv" -Force
 npx --yes --package @playwright/cli playwright-cli click <txnRef>
 Start-Sleep -Seconds 4
-Copy-Item ".playwright-cli\live-transaction-list.csv" "<EXPORT_ROOT>\<YYYY-MM-DD>\3ETF_transactions.csv" -Force
+Copy-Item ".playwright-cli\live-transaction-list.csv" "D:\Users\Administrator\Documents\New project 2\jq_exports\<YYYY-MM-DD>\3ETF_transactions.csv" -Force
 ```
 策略名映射：`重点关注_3ETF`、`重点关注_2ETF`、`双龙出海_五福x2.0合并版`。
 
@@ -66,7 +83,7 @@ npx --yes --package @playwright/cli playwright-cli eval "() => { /* 取日志容
 
 ### 对账
 ```powershell
-python <skill>/scripts/jq_daily_analyze.py "<EXPORT_ROOT>\<YYYY-MM-DD>" <3ETF累计> <2ETF累计> <双龙累计>
+python <skill>/scripts/jq_daily_analyze.py "D:\Users\Administrator\Documents\New project 2\jq_exports\<YYYY-MM-DD>" <3ETF累计> <2ETF累计> <双龙累计>
 ```
 
 ## 3. 资料库/日志更新模板
@@ -85,7 +102,7 @@ tags: 复盘
 ## 关联（三张策略笔记、首页、上一份复盘）
 ```
 
-### 工作日志（`<LOG_ROOT>\复盘记录_YYYY-MM-DD.md`）
+### 工作日志（`New project 2\复盘记录_YYYY-MM-DD.md`）
 按既有格式追加：背景与目标、页面收益、今日动作、日志核对、观察点、数据文件。
 
 ## 4. 代码注入与回测
