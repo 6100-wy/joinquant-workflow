@@ -37,7 +37,7 @@ npx --yes --package @playwright/cli playwright-cli snapshot   # 找“签到”�
 # 2) 签到：按钮为“已签到”则跳过；为“签到/签到领积分”时不自动点击——
 #    提醒用户在可见窗口手动签到并完成拼图验证码（实测 AI 无法自动通过，点击后会弹“完成拼图验证”），
 #    等待用户回复“好了”后确认变为“已签到”。不要自动点击、不要反复重试。
-# 3) 浏览社区文章（自动累计 1 分/篇，上限 30 分/月）：
+# 3) 浏览社区文章（1 分/篇，上限 30 分/月；分工：Codex 只看 1 篇，其余用户自己点）：
 #    按钮“已完成”= 本月已达标，跳过；否则去社区列表逐篇打开文章
 npx --yes --package @playwright/cli playwright-cli goto "https://www.joinquant.com/view/community/list?listType=1"
 npx --yes --package @playwright/cli playwright-cli find "<文章标题>"
@@ -45,7 +45,8 @@ npx --yes --package @playwright/cli playwright-cli click <文章ref>
 Start-Sleep -Seconds 3   # 停留计数
 #    ⚠ 浏览同样会弹“拉动图标/拼图验证”（与签到同类，AI 无法自动通过）：
 #    出现验证码时停止自动操作，让用户在可见窗口手动完成，否则积分不累计（08-15 实测无积分变化）。
-# 循环打开若干篇后回到积分中心确认“可用积分”与状态
+#    其余文章由用户自行点击；出现“拉动图标/拼图验证”时由用户手动完成（AI 无法自动通过）。
+# 之后回到积分中心确认“可用积分”与状态
 ```
 
 说明：浏览积分按文章打开自动累计，无需手动领取；每月上限 30 分，达标后按钮显示“已完成”。
