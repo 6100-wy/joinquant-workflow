@@ -19,6 +19,7 @@ description: JoinQuant（聚宽）量化日常：自动打开并登录聚宽平�
 - 导出目录：`D:\Users\Administrator\Documents\New project 2\jq_exports\YYYY-MM-DD\`
 - 工作日志：`D:\Users\Administrator\Documents\New project 2\复盘记录_YYYY-MM-DD.md`
 - 对账脚本：本技能 `scripts/jq_daily_analyze.py`
+- 视觉识别脚本：本技能 `scripts/glm_vision.py`（智谱 GLM-4V-Flash 免费视觉模型，Key 存于 `C:\Users\Administrator\.codex\zhipu_api_key.txt`；DeepSeek 主模型不认图时用它读图）
 
 ## 流程决策
 
@@ -82,3 +83,11 @@ description: JoinQuant（聚宽）量化日常：自动打开并登录聚宽平�
 - 回测结束时间不能晚于前一个交易日；结束日期用 `前一日`。
 - 用词克制：不承诺收益、不用“稳赚”类表述；无法核实的数字标注口径。
 - 浏览器窗口：用户在时用 `--headed`；无人值守用无头模式即可。
+
+## 七、截图视觉读取（GLM-4V-Flash）
+
+当用户发来截图（聚宽列表页、持仓、日志、论坛文章等）或 `eval` 抓不到页面文本时：
+
+1. 运行 `python scripts/glm_vision.py <图片路径> "<想问的问题>"`，让 GLM-4V-Flash 读出图中文字、数字、表格。
+2. 超过 4MB 的图脚本会自动压缩（需 Pillow，已安装）；识别结果再按需填入对账/复盘。
+3. Key 缺失时脚本会提示注册 bigmodel.cn；不要在任何输出中复述完整 Key。

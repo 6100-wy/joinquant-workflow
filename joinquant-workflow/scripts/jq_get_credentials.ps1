@@ -1,7 +1,7 @@
 # 读取聚宽凭据（DPAPI 加密存储），输出 phone 与解密后的 password
 # 用法: powershell -File jq_get_credentials.ps1
 $ErrorActionPreference = 'Stop'
-$path = Join-Path $env:USERPROFILE '.joinquant-credentials.json'
+$path = 'C:\Users\Administrator\.joinquant-credentials.json'
 if (-not (Test-Path -LiteralPath $path)) {
     Write-Error "凭据文件不存在: $path"
     exit 1

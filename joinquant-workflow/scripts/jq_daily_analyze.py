@@ -59,8 +59,5 @@ def analyze(folder):
 
 
 if __name__ == "__main__":
-    folder = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("JQ_EXPORT_ROOT", "")
-    if not folder:
-        print("用法: python jq_daily_analyze.py <导出目录> [累计收益1 累计收益2 累计收益3]（或设置环境变量 JQ_EXPORT_ROOT）")
-        sys.exit(1)
+    folder = sys.argv[1] if len(sys.argv) > 1 else r"D:\Users\Administrator\Documents\New project 2\jq_exports"
     analyze(folder)
